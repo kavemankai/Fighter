@@ -135,6 +135,7 @@ class CombatManager:
             c for c in self._player_card_map().values()
             if c.is_available_at_range(self.current_range)
             and self.player.can_afford(c.stamina_cost)
+            and (not c.is_recover or self.player.recover_cooldown == 0)
         ]
 
     def all_player_cards(self) -> list[Card]:
@@ -147,6 +148,8 @@ class CombatManager:
             return f"Disabled at {self.current_range}"
         if not self.player.can_afford(card.stamina_cost):
             return f"Need {card.stamina_cost} stamina (have {self.player.stamina})"
+        if card.is_recover and self.player.recover_cooldown > 0:
+            return f"Recover on cooldown ({self.player.recover_cooldown} round{'s' if self.player.recover_cooldown > 1 else ''})"
         return None
 
     # ── Resolution ──────────────────────────────────────────────────────────
@@ -196,6 +199,7 @@ class CombatManager:
         # ── Recover (stamina) ────────────────────────────────────────
         if card.is_recover:
             attacker.restore_stamina(25)
+            attacker.recover_cooldown = 2   # locked for next round
             result.log(f"{attacker.name} recovers. Stamina → {attacker.stamina}")
             return result
 

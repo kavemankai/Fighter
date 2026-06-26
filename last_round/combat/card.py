@@ -13,7 +13,7 @@ from typing import Optional
 # Values: float multiplier, or None = Disabled
 RANGE_MODIFIERS: dict[str, dict[str, Optional[float]]] = {
     "Straight Kick":  {"LONG": 1.0, "MID": 0.75, "CLOSE": None},
-    "Front Kick":     {"LONG": 1.0, "MID": 1.0,  "CLOSE": 0.5},
+    "Front Kick":     {"LONG": 1.0, "MID": 1.0,  "CLOSE": None},
     "Reverse Punch":  {"LONG": 0.75,"MID": 1.0,  "CLOSE": 1.0},
     "Roundhouse":     {"LONG": 1.0, "MID": 1.0,  "CLOSE": None},
     "Jab":            {"LONG": None,"MID": 1.0,  "CLOSE": 1.0},

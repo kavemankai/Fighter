@@ -29,9 +29,13 @@ class Fighter:
         self.range    = "MID"
 
         # Temporary effect flags (cleared end of round, spec §3 step 8)
-        self.blocking = False
-        self.dodging  = False
+        self.blocking  = False
+        self.dodging   = False
         self.staggered = False
+
+        # Recover cooldown: set to 2 after use; decrements each end_round.
+        # Prevents zero-cost stall loops (0 → available, >0 → locked).
+        self.recover_cooldown: int = 0
 
     # ── Stat helpers ──────────────────────────────────────────────────────
 
@@ -81,7 +85,10 @@ class Fighter:
     def regenerate(self):
         """Called once per round after both fighters have acted."""
         self.stamina = min(self.stamina_max, self.stamina + 5)
-        self.balance = min(self.balance_max, self.balance + 3)
+        # +1 not +3: at +3 balance regen outpaces Roundhouse pressure (−15 bal
+        # every 2 rounds → net −9/2rds) and stagger never triggers before KO.
+        # At +1 stagger lands at round 7 with HP=18 still alive.
+        self.balance = min(self.balance_max, self.balance + 1)
         # Momentum does not regenerate.
 
     # ── Stagger (spec §10) ───────────────────────────────────────────────
@@ -110,6 +117,7 @@ class Fighter:
         self.blocking  = False
         self.dodging   = False
         self.resolve_stagger_recovery()
+        self.recover_cooldown = max(0, self.recover_cooldown - 1)
 
     # ── Debug ──────────────────────────────────────────────────────────────
 

@@ -53,10 +53,12 @@ print('OK')
 - Damage formula: `floor(base × range_modifier × momentum_modifier)`
 - Momentum tiers: 0→1.0×, 25→1.1×, 50→1.2×, 75→1.3×, 100→1.4×
 - Stagger: balance ≤ 0 → `staggered = True`, balance reset to 15 next round
-- Simultaneous KO → player wins (spec §16, player action resolved first)
+- Simultaneous KO → player wins (both resolve to 0 HP same round; player action always resolved first, so player's KO is applied before opponent's, and `winner()` checks opponent first)
 - Block halves both HP damage and balance damage (floor each)
 - Dodge: no damage to defender; attacker still gains card momentum; dodger gains +10 momentum
-- Front Kick `push_target` pushes defender back one range step even on a successful dodge
+- Front Kick `push_target` pushes defender back one range step even on a successful dodge; disabled at CLOSE (was 0.5× = 4dmg, not worth a hand slot)
+- Recover locked for 1 round after use (`recover_cooldown = 2`, decremented each `end_round`) — prevents zero-cost stall loops
+- Balance regen: +1/round (not +3). At +3, Roundhouse pressure (−15 BAL every 2 rounds) nets only −9 balance per cycle; stagger never triggers before KO. At +1, stagger lands at round 7 with HP=18 still alive.
 
 ## Card catalogue
 
@@ -64,13 +66,13 @@ print('OK')
 | Card | STA | DMG | BAL DMG | MOM+ | Notes |
 |---|---|---|---|---|---|
 | Straight Kick | 15 | 12 | — | +5 | LONG/MID only |
-| Front Kick | 10 | 8 | — | +5 | Pushes target back |
+| Front Kick | 10 | 8 | — | +5 | Pushes target back; LONG/MID only |
 | Reverse Punch | 12 | 10 | — | +5 | Best at MID/CLOSE |
 | Roundhouse | 30 | 20 | 15 | +10 | Heavy; LONG/MID only |
 | Block | 0 | — | — | — | Halves incoming damage |
 | Sidestep | 10 | — | — | +10 | Dodge |
 | Focus | 0 | — | — | +20 | Momentum only |
-| Recover | 0 | — | — | — | +25 STA |
+| Recover | 0 | — | — | — | +25 STA; 1-round cooldown after use |
 | Step In | 5 | — | — | +5 | Move closer |
 | Retreat | 5 | — | — | — | Move back |
 | Brace | 10 | — | — | — | +25 BAL |
@@ -85,8 +87,8 @@ print('OK')
 7. Fallback → Guard
 
 ## Open / watch
-- Stagger not triggered in simulation — needs Roundhouse-heavy playtest (target: 3–4 hits)
 - Roundhouse at 30 STA cost may lock player out; consider reducing to 25 if it feels inaccessible
-- Body Shot stamina drain (−10 STA/round) could create suffocation loops — monitor
+- **Body Shot combo (intentional)**: 2–3 early Body Shots → player burns Recover turns → Boxer gains momentum → Haymaker. This is a valid pressure loop. If it feels oppressive, cap stamina damage or add diminishing returns.
+- **Simultaneous KO UI**: the "player wins on draw" rule is invisible. Consider a "DRAW → YOU WIN" banner in Ren'Py (`combat_screen.rpy`) to surface the decision visually.
 - No real image/audio assets yet (all `Solid()` placeholders in `combat_screen.rpy`)
 - `combat_screen.rpy` targets 1280×720; fighter sprites at xpos 160 (player) and 940 (boxer)
