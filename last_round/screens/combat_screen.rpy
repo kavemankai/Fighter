@@ -338,7 +338,7 @@ screen combat_hud(manager):
             # Portrait
             frame:
                 style "hud_portrait_frame"
-                add "portrait_karate" xsize 80 ysize 80
+                add ("portrait_" + manager.player.style.lower()) xsize 80 ysize 80
 
             # Bars
             vbox:
@@ -431,7 +431,7 @@ screen combat_hud(manager):
             # Portrait
             frame:
                 style "hud_portrait_frame"
-                add "portrait_boxer" xsize 80 ysize 80
+                add ("portrait_" + manager.boxer.style.lower()) xsize 80 ysize 80
 
 
 # ═══════════════════════════════════════════════════════════════════════════════
@@ -532,14 +532,14 @@ screen combat_arena(manager, shake_screen=False):
         ypos 140
         at (camera_shake if shake_screen else Null())
 
-        # Karate fighter — left side
-        add "sprite_karate_idle":
+        # Player fighter — left side
+        add ("sprite_" + manager.player.style.lower() + "_idle"):
             xsize 180 ysize 300
             xpos  160 yalign 0.9
             at sprite_hit_reel if _fx_shake_player else Null()
 
-        # Boxer — right side (mirrored via zoom=-1 on x-axis once real sprites are in)
-        add "sprite_boxer_idle":
+        # Opponent — right side (mirrored via zoom=-1 on x-axis once real sprites are in)
+        add ("sprite_" + manager.boxer.style.lower() + "_idle"):
             xsize 180 ysize 300
             xpos  940 yalign 0.9
             at sprite_hit_reel if _fx_shake_boxer else Null()

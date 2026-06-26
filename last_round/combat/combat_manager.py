@@ -191,9 +191,10 @@ class CombatManager:
         # ── Sidestep / Slip ──────────────────────────────────────────
         if card.is_dodge:
             attacker.dodging = True
+            if card.momentum_gain:
+                attacker.gain_momentum(card.momentum_gain)
+                result.log(f"{attacker.name} Momentum → {attacker.momentum}")
             result.log(f"{attacker.name} prepares to slip the next attack.")
-            # Momentum gained on successful dodge is applied in the attack resolver
-            # when the dodge actually triggers, not here.
             return result
 
         # ── Recover (stamina) ────────────────────────────────────────
@@ -268,11 +269,9 @@ class CombatManager:
                 result.stamina_dealt = card.stamina_damage
                 result.log(f"  Stamina damage: {card.stamina_damage} → {defender.name} Stamina {defender.stamina}")
 
-            # Attacker momentum gain (spec §8)
-            # Stagger momentum already added above if triggered
-            if not result.stagger_caused:
-                attacker.gain_momentum(card.momentum_gain)
-                result.log(f"  {attacker.name} Momentum → {attacker.momentum}")
+            # Attacker momentum gain (spec §8) — always apply; stagger bonus additive
+            attacker.gain_momentum(card.momentum_gain)
+            result.log(f"  {attacker.name} Momentum → {attacker.momentum}")
 
             # Front Kick push (spec §12: push applies even on dodge, handled above)
             if card.push_target and not result.dodged:
