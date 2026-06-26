@@ -21,8 +21,11 @@ import os
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "combat"))
 
 from fighter import Fighter
-from card import KARATE_CARD_MAP, Card
+from card import Card
 from combat_manager import CombatManager
+
+
+STYLES = ["KARATE", "MUAY_THAI", "CAPOEIRA", "WRESTLER", "BOXER"]
 
 
 def clear():
@@ -34,11 +37,28 @@ def bar(value: int, maximum: int, width: int = 20, char: str = "█") -> str:
     return char * filled + "░" * (width - filled)
 
 
+def pick_style(prompt: str) -> str:
+    print(f"\n  {prompt}")
+    for i, s in enumerate(STYLES, 1):
+        print(f"  [{i}] {s}")
+    while True:
+        raw = input("  > ").strip()
+        try:
+            idx = int(raw) - 1
+            if 0 <= idx < len(STYLES):
+                return STYLES[idx]
+        except ValueError:
+            pass
+        print(f"  Enter a number 1–{len(STYLES)}")
+
+
 def render_hud(manager: CombatManager):
     p = manager.player
     b = manager.boxer
+    p_label = f"{p.style}"
+    b_label = f"{b.style}"
     print(f"\n{'─' * 60}")
-    print(f"  KARATE                           BOXER")
+    print(f"  {p_label:<30} {b_label}")
     print(f"  HP  [{bar(p.hp, 100)}] {p.hp:>3}   [{bar(b.hp, 100)}] {b.hp:>3}")
     print(f"  STA [{bar(p.stamina, 100)}] {p.stamina:>3}   [{bar(b.stamina, 100)}] {b.stamina:>3}")
     print(f"  MOM [{bar(p.momentum, 100)}] {p.momentum:>3}   [{bar(b.momentum, 100)}] {b.momentum:>3}")
@@ -61,7 +81,6 @@ def render_hud(manager: CombatManager):
 
 def render_cards(manager: CombatManager) -> list[Card]:
     all_cards = manager.all_player_cards()
-    available = manager.available_player_cards()
 
     print("\n  Select a card:\n")
     selectable = []
@@ -78,14 +97,17 @@ def render_cards(manager: CombatManager) -> list[Card]:
 
 
 def run_fight():
-    player = Fighter("Karate Fighter", "KARATE")
-    boxer  = Fighter("Boxer", "BOXER")
+    p_style = pick_style("Choose YOUR style:")
+    b_style = pick_style("Choose OPPONENT style:")
+
+    player = Fighter("Fighter", p_style)
+    boxer  = Fighter("Opponent", b_style)
     manager = CombatManager(player, boxer)
 
     print("\n  ══════════════════════════════════")
     print("        LAST ROUND — TEXT MODE")
     print("  ══════════════════════════════════")
-    print(f"  {player.name}  vs  {boxer.name}")
+    print(f"  {player.style}  vs  {boxer.style}")
     print("  Press Enter to begin...\n")
     input()
 
@@ -120,7 +142,7 @@ def run_fight():
 
         # AI turn
         ai_result = manager.ai_turn()
-        print(f"\n  ── BOXER: {ai_result.card_name} ──")
+        print(f"\n  ── OPPONENT: {ai_result.card_name} ──")
         for msg in ai_result.messages:
             print(f"  {msg}")
 
@@ -134,7 +156,7 @@ def run_fight():
     winner = manager.winner()
     print(f"\n{'═' * 60}")
     if winner == "player":
-        print("  VICTORY — The Boxer has been defeated.")
+        print("  VICTORY — The opponent has been defeated.")
     else:
         print("  DEFEAT — You have been knocked out.")
     print(f"  Match lasted {manager.round_number - 1} rounds.")
