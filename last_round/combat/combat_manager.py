@@ -21,7 +21,7 @@ Turn sequence (spec §3):
 from __future__ import annotations
 from typing import Optional
 from fighter import Fighter
-from card import Card, KARATE_CARD_MAP, BOXER_CARD_MAP, get_momentum_modifier
+from card import Card, KARATE_CARD_MAP, BOXER_CARD_MAP, STYLE_CARD_MAP, get_momentum_modifier
 import ai
 
 
@@ -123,20 +123,23 @@ class CombatManager:
             return "boxer"
         return None
 
+    def _player_card_map(self) -> dict:
+        return STYLE_CARD_MAP.get(self.player.style, KARATE_CARD_MAP)
+
     def available_player_cards(self) -> list[Card]:
         """
         Returns all player cards that can be used this turn.
         Greyed-out logic: disabled at range OR insufficient stamina.
         """
         return [
-            c for c in KARATE_CARD_MAP.values()
+            c for c in self._player_card_map().values()
             if c.is_available_at_range(self.current_range)
             and self.player.can_afford(c.stamina_cost)
         ]
 
     def all_player_cards(self) -> list[Card]:
         """All player cards including disabled ones (for UI rendering)."""
-        return list(KARATE_CARD_MAP.values())
+        return list(self._player_card_map().values())
 
     def card_disabled_reason(self, card: Card) -> Optional[str]:
         """Returns a human-readable reason a card is unavailable, or None."""

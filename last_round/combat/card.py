@@ -21,6 +21,25 @@ RANGE_MODIFIERS: dict[str, dict[str, Optional[float]]] = {
     "Hook":           {"LONG": None,"MID": 0.75, "CLOSE": 1.0},
     "Body Shot":      {"LONG": None,"MID": 1.0,  "CLOSE": 1.0},
     "Haymaker":       {"LONG": None,"MID": 1.0,  "CLOSE": 1.0},
+
+    # Muay Thai
+    "Teep":           {"LONG": 0.75, "MID": 1.0,  "CLOSE": 1.0 },
+    "Leg Kick":       {"LONG": 0.75, "MID": 1.0,  "CLOSE": 1.0 },
+    "High Kick":      {"LONG": 1.0,  "MID": 1.0,  "CLOSE": None},
+    "Elbow":          {"LONG": None, "MID": 0.5,  "CLOSE": 1.0 },
+    "Knee":           {"LONG": None, "MID": 1.0,  "CLOSE": 1.0 },
+
+    # Capoeira
+    "Meia Lua":       {"LONG": 1.0,  "MID": 1.0,  "CLOSE": None},
+    "Martelo":        {"LONG": None, "MID": 1.0,  "CLOSE": 1.0 },
+    "Armada":         {"LONG": 1.0,  "MID": 1.0,  "CLOSE": None},
+    "Joana":          {"LONG": 0.75, "MID": 1.0,  "CLOSE": 1.0 },
+
+    # Wrestler
+    "Overhand":       {"LONG": None, "MID": 1.0,  "CLOSE": 1.0 },
+    "Takedown":       {"LONG": None, "MID": None, "CLOSE": 1.0 },
+    "Slam":           {"LONG": None, "MID": None, "CLOSE": 1.0 },
+    "Double Leg":     {"LONG": None, "MID": 0.5,  "CLOSE": 1.0 },
 }
 
 # Momentum tier multipliers (spec §7)
@@ -130,6 +149,63 @@ BOXER_CARDS: list[Card] = [
     Card("Brace",            stamina_cost=10, is_brace=True),
 ]
 
+# Muay Thai cards
+MUAY_THAI_CARDS: list[Card] = [
+    Card("Teep",      stamina_cost=10, damage=8,  momentum_gain=5,  push_target=True),
+    Card("Leg Kick",  stamina_cost=12, damage=8,  balance_damage=10, momentum_gain=5),
+    Card("High Kick", stamina_cost=15, damage=12, momentum_gain=5),
+    Card("Elbow",     stamina_cost=18, damage=16, momentum_gain=8,  is_heavy=True),
+    Card("Knee",      stamina_cost=16, damage=14, balance_damage=8,  momentum_gain=8),
+    Card("Clinch",    stamina_cost=5,  is_movement=True, move_direction=1,  momentum_gain=5),
+    Card("Block",     stamina_cost=0,  is_block=True),
+    Card("Slip",      stamina_cost=10, is_dodge=True, momentum_gain=10),
+    Card("Recover",   stamina_cost=0,  is_recover=True),
+    Card("Step Back", stamina_cost=5,  is_movement=True, move_direction=-1),
+    Card("Brace",     stamina_cost=10, is_brace=True),
+]
+
+# Capoeira cards
+CAPOEIRA_CARDS: list[Card] = [
+    Card("Ginga",      stamina_cost=0,  is_dodge=True,    momentum_gain=15),
+    Card("Au",         stamina_cost=10, is_dodge=True,    momentum_gain=20),
+    Card("Meia Lua",   stamina_cost=14, damage=11, balance_damage=8,  momentum_gain=8),
+    Card("Martelo",    stamina_cost=12, damage=10, momentum_gain=6),
+    Card("Armada",     stamina_cost=22, damage=18, momentum_gain=12, is_heavy=True),
+    Card("Joana",      stamina_cost=8,  damage=7,  momentum_gain=5,  push_target=True),
+    Card("Ginga Step", stamina_cost=5,  is_movement=True, move_direction=-1, momentum_gain=8),
+    Card("Step In",    stamina_cost=5,  is_movement=True, move_direction=1,  momentum_gain=5),
+    Card("Recover",    stamina_cost=0,  is_recover=True),
+    Card("Brace",      stamina_cost=10, is_brace=True),
+    Card("Block",      stamina_cost=0,  is_block=True),
+]
+
+# Wrestler cards
+WRESTLER_CARDS: list[Card] = [
+    Card("Jab",         stamina_cost=8,  damage=7,  momentum_gain=4),
+    Card("Overhand",    stamina_cost=14, damage=14, momentum_gain=5),
+    Card("Clinch Grab", stamina_cost=5,  is_movement=True, move_direction=1, momentum_gain=5),
+    Card("Takedown",    stamina_cost=20, damage=8,  balance_damage=20, momentum_gain=10, is_heavy=True),
+    Card("Slam",        stamina_cost=25, damage=20, balance_damage=12, momentum_gain=10, is_heavy=True),
+    Card("Double Leg",  stamina_cost=16, damage=6,  balance_damage=16, momentum_gain=8),
+    Card("Sprawl",      stamina_cost=0,  is_block=True),
+    Card("Shoot",       stamina_cost=10, is_dodge=True, momentum_gain=10),
+    Card("Recover",     stamina_cost=0,  is_recover=True),
+    Card("Brace",       stamina_cost=10, is_brace=True),
+    Card("Retreat",     stamina_cost=5,  is_movement=True, move_direction=-1),
+]
+
 # Lookup dicts
-KARATE_CARD_MAP: dict[str, Card] = {c.name: c for c in KARATE_CARDS}
-BOXER_CARD_MAP:  dict[str, Card] = {c.name: c for c in BOXER_CARDS}
+KARATE_CARD_MAP:    dict[str, Card] = {c.name: c for c in KARATE_CARDS}
+BOXER_CARD_MAP:     dict[str, Card] = {c.name: c for c in BOXER_CARDS}
+MUAY_THAI_CARD_MAP: dict[str, Card] = {c.name: c for c in MUAY_THAI_CARDS}
+CAPOEIRA_CARD_MAP:  dict[str, Card] = {c.name: c for c in CAPOEIRA_CARDS}
+WRESTLER_CARD_MAP:  dict[str, Card] = {c.name: c for c in WRESTLER_CARDS}
+
+# Style → card map (used by CombatManager for player card dispatch)
+STYLE_CARD_MAP: dict[str, dict[str, "Card"]] = {
+    "KARATE":    KARATE_CARD_MAP,
+    "BOXER":     BOXER_CARD_MAP,
+    "MUAY_THAI": MUAY_THAI_CARD_MAP,
+    "CAPOEIRA":  CAPOEIRA_CARD_MAP,
+    "WRESTLER":  WRESTLER_CARD_MAP,
+}
