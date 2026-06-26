@@ -31,6 +31,8 @@ def _choose_boxer(boxer: "Fighter", player: "Fighter", manager: "CombatManager")
 
     def can_use(name: str) -> bool:
         card = BOXER_CARD_MAP[name]
+        if card.is_recover and boxer.recover_cooldown > 0:
+            return False
         return (
             boxer.can_afford(card.stamina_cost)
             and card.is_available_at_range(manager.current_range)
@@ -43,8 +45,10 @@ def _choose_boxer(boxer: "Fighter", player: "Fighter", manager: "CombatManager")
         return BOXER_CARD_MAP["Guard"]
 
     # Priority 2 – Stamina critical
-    if boxer.stamina < 20:
+    if boxer.stamina < 20 and can_use("Recover"):
         return BOXER_CARD_MAP["Recover"]
+    elif boxer.stamina < 20:
+        return BOXER_CARD_MAP["Guard"]
 
     # Priority 3 – Wrong range — push in
     if manager.current_range == "LONG":
@@ -78,6 +82,8 @@ def _choose_muay_thai(boxer: "Fighter", player: "Fighter", manager: "CombatManag
 
     def can_use(name: str) -> bool:
         card = C[name]
+        if card.is_recover and boxer.recover_cooldown > 0:
+            return False
         return boxer.can_afford(card.stamina_cost) and card.is_available_at_range(manager.current_range)
 
     # Priority 1 – Staggered
@@ -85,8 +91,10 @@ def _choose_muay_thai(boxer: "Fighter", player: "Fighter", manager: "CombatManag
         return C["Brace"] if can_use("Brace") else C["Block"]
 
     # Priority 2 – Stamina critical
-    if boxer.stamina < 20:
+    if boxer.stamina < 20 and can_use("Recover"):
         return C["Recover"]
+    elif boxer.stamina < 20:
+        return C["Block"]
 
     # Priority 3 – Wrong range — close in
     if manager.current_range == "LONG":
@@ -119,6 +127,8 @@ def _choose_capoeira(boxer: "Fighter", player: "Fighter", manager: "CombatManage
 
     def can_use(name: str) -> bool:
         card = C[name]
+        if card.is_recover and boxer.recover_cooldown > 0:
+            return False
         return boxer.can_afford(card.stamina_cost) and card.is_available_at_range(manager.current_range)
 
     # Priority 1 – Staggered — Capoeira dodges out, not blocks
@@ -128,8 +138,10 @@ def _choose_capoeira(boxer: "Fighter", player: "Fighter", manager: "CombatManage
         return C["Brace"] if can_use("Brace") else C["Block"]
 
     # Priority 2 – Stamina critical
-    if boxer.stamina < 20:
+    if boxer.stamina < 20 and can_use("Recover"):
         return C["Recover"]
+    elif boxer.stamina < 20:
+        return C["Block"]
 
     # Priority 3 – Retreat to preferred range (Capoeira likes space)
     if manager.current_range == "CLOSE" and can_use("Ginga Step"):
@@ -159,6 +171,8 @@ def _choose_wrestler(boxer: "Fighter", player: "Fighter", manager: "CombatManage
 
     def can_use(name: str) -> bool:
         card = C[name]
+        if card.is_recover and boxer.recover_cooldown > 0:
+            return False
         return boxer.can_afford(card.stamina_cost) and card.is_available_at_range(manager.current_range)
 
     # Priority 1 – Staggered
@@ -166,8 +180,10 @@ def _choose_wrestler(boxer: "Fighter", player: "Fighter", manager: "CombatManage
         return C["Brace"] if can_use("Brace") else C["Sprawl"]
 
     # Priority 2 – Stamina critical
-    if boxer.stamina < 20:
+    if boxer.stamina < 20 and can_use("Recover"):
         return C["Recover"]
+    elif boxer.stamina < 20:
+        return C["Sprawl"]
 
     # Priority 3+4 – Close the distance aggressively
     if manager.current_range in ("LONG", "MID") and can_use("Clinch Grab"):

@@ -65,12 +65,16 @@ def render_hud(manager: CombatManager):
     print(f"  BAL [{bar(p.balance, 50, char='▪')}] {p.balance:>3}   [{bar(b.balance, 50, char='▪')}] {b.balance:>3}")
 
     flags_p = []
-    if p.staggered: flags_p.append("STAGGERED")
-    if p.blocking:  flags_p.append("BLOCKING")
-    if p.dodging:   flags_p.append("DODGING")
+    if p.staggered:            flags_p.append("STAGGERED")
+    if p.blocking:             flags_p.append("BLOCKING")
+    if p.dodging:              flags_p.append("DODGING")
+    if p.recover_cooldown > 0: flags_p.append(f"REC({p.recover_cooldown})")
 
     flags_b = []
-    if b.staggered: flags_b.append("STAGGERED")
+    if b.staggered:            flags_b.append("STAGGERED")
+    if b.blocking:             flags_b.append("BLOCKING")
+    if b.dodging:              flags_b.append("DODGING")
+    if b.recover_cooldown > 0: flags_b.append(f"REC({b.recover_cooldown})")
 
     if flags_p or flags_b:
         print(f"  {' '.join(flags_p) or '':30s}  {' '.join(flags_b) or ''}")
@@ -92,6 +96,14 @@ def render_cards(manager: CombatManager) -> list[Card]:
             print(f"  [{idx}] {card.name:<20} STA:{card.stamina_cost:>2}  DMG:{card.damage:>2}  BAL:{card.balance_damage:>2}  MOM:+{card.momentum_gain}")
         else:
             print(f"  [ ] {card.name:<20} — {reason}")
+
+    if not selectable:
+        from card import STYLE_CARD_MAP
+        style_map = STYLE_CARD_MAP.get(manager.player.style, {})
+        forced = next((c for c in style_map.values() if c.is_block), None)
+        if forced:
+            selectable = [forced]
+            print(f"\n  [!] No cards available — forced to [{forced.name}].")
 
     return selectable
 

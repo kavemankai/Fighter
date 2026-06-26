@@ -135,6 +135,7 @@ class CombatManager:
             c for c in self._player_card_map().values()
             if c.is_available_at_range(self.current_range)
             and self.player.can_afford(c.stamina_cost)
+            and (not c.is_recover or self.player.recover_cooldown == 0)
         ]
 
     def all_player_cards(self) -> list[Card]:
@@ -147,6 +148,8 @@ class CombatManager:
             return f"Disabled at {self.current_range}"
         if not self.player.can_afford(card.stamina_cost):
             return f"Need {card.stamina_cost} stamina (have {self.player.stamina})"
+        if card.is_recover and self.player.recover_cooldown > 0:
+            return f"Recover on cooldown ({self.player.recover_cooldown} round{'s' if self.player.recover_cooldown > 1 else ''})"
         return None
 
     # ── Resolution ──────────────────────────────────────────────────────────
@@ -188,14 +191,16 @@ class CombatManager:
         # ── Sidestep / Slip ──────────────────────────────────────────
         if card.is_dodge:
             attacker.dodging = True
+            if card.momentum_gain:
+                attacker.gain_momentum(card.momentum_gain)
+                result.log(f"{attacker.name} Momentum → {attacker.momentum}")
             result.log(f"{attacker.name} prepares to slip the next attack.")
-            # Momentum gained on successful dodge is applied in the attack resolver
-            # when the dodge actually triggers, not here.
             return result
 
         # ── Recover (stamina) ────────────────────────────────────────
         if card.is_recover:
             attacker.restore_stamina(25)
+            attacker.recover_cooldown = 2   # locked for next round
             result.log(f"{attacker.name} recovers. Stamina → {attacker.stamina}")
             return result
 
@@ -264,11 +269,9 @@ class CombatManager:
                 result.stamina_dealt = card.stamina_damage
                 result.log(f"  Stamina damage: {card.stamina_damage} → {defender.name} Stamina {defender.stamina}")
 
-            # Attacker momentum gain (spec §8)
-            # Stagger momentum already added above if triggered
-            if not result.stagger_caused:
-                attacker.gain_momentum(card.momentum_gain)
-                result.log(f"  {attacker.name} Momentum → {attacker.momentum}")
+            # Attacker momentum gain (spec §8) — always apply; stagger bonus additive
+            attacker.gain_momentum(card.momentum_gain)
+            result.log(f"  {attacker.name} Momentum → {attacker.momentum}")
 
             # Front Kick push (spec §12: push applies even on dodge, handled above)
             if card.push_target and not result.dodged:
